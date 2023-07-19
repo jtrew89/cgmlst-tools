@@ -23,7 +23,7 @@ def main(args):
 	new_db = pd.concat([in_alle,db_alle],ignore_index=True)
 
 	##Save new db
-	new_db.to_csv(db_dir+'curr_db_'+date+'.csv')
+	new_db.to_csv(db_dir+'curr_db_'+date+'.csv',index=False)
 
 if __name__ == '__main__':
 	##Create arguments

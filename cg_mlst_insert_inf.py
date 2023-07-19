@@ -12,6 +12,7 @@ from Bio import SeqIO
 import os
 import argparse
 import pandas as pd
+import sys
 
 ##Make whole script into function so that the script can be imported by another script
 def main(args):

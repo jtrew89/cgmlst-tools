@@ -30,7 +30,8 @@ parser.add_argument('-sdb','--strain_db',dest='str_db',help="Strain db to update
 args = parser.parse_args()
 
 ##Variables used in script
-date = time.strftime("%Y%m%d")
+date = time.strftime("%d%m%Y")
+run_id = os.path.basename(os.path.dirname(args.out_dir)) + '/'
 
 ##Run chewBBACA
 with open(f'{args.dir}+{date}+.log', 'w') as log_file:
@@ -38,7 +39,7 @@ with open(f'{args.dir}+{date}+.log', 'w') as log_file:
 		['chewBBACA.py', 'AlleleCall',
 		'-i', args.in_dir, f'-g {args.sch_dir}',
 		'--no-inferred --output-novel',
-		f'--ptf {args.train}', f'-o {args.out_dir}',
+		f'--ptf {args.train}', f'-o {args.out_dir}.{run_id}',
 		f'--cpu {cpus}'
 		],
 		stdout=log_file
