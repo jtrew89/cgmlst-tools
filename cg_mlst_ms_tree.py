@@ -23,6 +23,11 @@ parser.add_argument(
 	required=True
 	)
 parser.add_argument(
+	'-sdb', '--sequence_type_db', dest='stdb',
+	help='ST profile db with STs you wish analysed (Include path)',
+	required=False
+	)
+parser.add_argument(
 	'-i', '--input_isolates', dest='in_iso',
 	help="List of isolates to be analysed (single column, with 'Isolates' as header)",
 	required=True
@@ -65,6 +70,15 @@ else:
 	print(f'Input file for allele profile database ({args.pro_db}) must have a suffix of either "tsv" or "csv", and formated as such')
 	exit()
 
+if args.stdb:
+	if 'csv' in args.stdb:
+		st_db = pd.read_csv(args.stdb, low_memory=False)
+	elif 'tsv' in args.stdb:
+		st_db = pd.read_table(args.stdb, low_memory=False)
+	else:
+		print(f'Input file for ST profile database ({args.stdb}) must have a suffix of either "tsv" or "csv", and formated as such')
+		exit()
+
 isolates = list(pd.read_table(args.in_iso)['Isolates'])
 
 ##Variables used in script
@@ -86,12 +100,34 @@ alle_db.replace(
 	inplace=True, regex=True
 		)
 
-##Pull profiles for each isolate from input isolates list
-for isolate in tqdm(isolates):
-	iso_prof = alle_db[alle_db['FILE'] == isolate]
-	iso_profs = iso_profs.append(iso_prof,ignore_index=True)
+##Pull profiles for each isolate from input isolates list and STs
+isolates_not_found = ['Isolates_not_found'] #list of isolates not found from list
 
-iso_profs.to_csv(args.out_dir+args.out+'_profs.tsv',sep='\t',index=False)
+if args.stdb:
+
+	for isolate in tqdm(isolates):
+
+		if isolate in list(alle_db['FILE']):
+			iso_prof = alle_db[alle_db['FILE'] == isolate]
+			iso_profs = iso_profs.append(iso_prof,ignore_index=True)
+		elif isolate in list(st_db['ST']):
+			st_prof = st_db[st_db['ST'] == isolate]
+			st_prof = st_prof.rename(columns={'ST': 'FILE'})
+			iso_profs = iso_profs.append(st_prof,ignore_index=True)
+		else:
+			isolates_not_found.append(isolate)
+else:
+	for isolate in tqdm(isolates):
+		if isolate in list(alle_db['FILE']):
+			iso_prof = alle_db[alle_db['FILE'] == isolate]
+			iso_profs = iso_profs.append(iso_prof,ignore_index=True)
+		else:
+			isolates_not_found.append(isolate)
+
+iso_profs.to_csv(args.out_dir+args.out+'_profs.tsv',sep='\t',index=False) #output selected isolate allele profiles
+with open(f'{args.out}_isolates_not_found.txt','w') as out_file: #output isolates that were not found in the input allele profile database file
+	for isolate in isolates_not_found:
+		out_file.write(f'{isolate}\n')
 
 ##create minimum spanning tree using metadata and iso_profs df
 if args.mst:
@@ -109,4 +145,3 @@ if args.mst:
 			],
 			stdout=log_file
 				)
-##
