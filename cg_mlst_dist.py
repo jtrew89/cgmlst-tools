@@ -3,7 +3,7 @@
 ##Import modules
 import pandas as pd
 import argparse
-import numpt as np
+import numpy as np
 
 def main(args):
 	##load data
