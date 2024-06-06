@@ -35,7 +35,7 @@ def main(args):
 	    
 			for isolate_2 in isolates:
 				dist = len(alle_prof_df.loc[isolate_1].compare(alle_prof_df.loc[isolate_2]).replace(0.0,np.nan).dropna()) #drops missing data per-pairwise comparison
-		        	out_alle_df.at[isolate_1, isolate_2] = dist
+				out_alle_df.at[isolate_1, isolate_2] = dist
 		
 		
 			final_alle_df.to_csv(args['out_dir'], sep='\t', index=True)
@@ -44,7 +44,7 @@ def main(args):
 		    
 			for isolate_2 in isolates:
 		        	dist = len(alle_prof_df.loc[isolate_1].compare(alle_prof_df.loc[isolate_2])) #keeps missing data
-		        	out_alle_df.at[isolate_1, isolate_2] = dist
+				out_alle_df.at[isolate_1, isolate_2] = dist
 		
 		
 			final_alle_df.to_csv(args['out_dir'], sep='\t', index=True)
