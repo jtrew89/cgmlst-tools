@@ -23,7 +23,7 @@ def main(args):
 		with open(isolate) as isolate_etoki_out:
 			for line in isolate_etoki_out:
 				if '>' in line:
-					profile_dic[line.split(' ')[0].split('>')[1]] = re.sub("[^0-9]", "",line[0].split(' ')[2])
+					profile_dic[line.split(' ')[0].split('>')[1]] = re.sub("[^0-9]", "",line.split(' ')[2])
 				else:
 					pass
 		isolate_dic[isolate_id] = profile_dic
