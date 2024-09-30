@@ -33,17 +33,17 @@ def main(args):
 
 
 	if __name__=='__main__':
-	##Create arguments
-	parser = argparse.ArgumentParser(description='A script to convert a file full of etoki fasta outputs "*results_alleles.fasta" in an allele profile for the database')
-	parser.add_argument(
-		'-id', '--input_directory',
-		dest='in_dir',
-		help="Directory where *results_alleles.fasta are kept",
-		required=True
-                )
+		##Create arguments
+		parser = argparse.ArgumentParser(description='A script to convert a file full of etoki fasta outputs "*results_alleles.fasta" in an allele profile for the database')
+		parser.add_argument(
+			'-id', '--input_directory',
+			dest='in_dir',
+			help="Directory where *results_alleles.fasta are kept",
+			required=True
+                	)
 
-	args = parser.parse_args()
+		args = parser.parse_args()
 
-	##Convert the argparse.Namespace to a dictionary: vars(args)
-	main(vars(args))
-	sys.exit(0)
+		##Convert the argparse.Namespace to a dictionary: vars(args)
+		main(vars(args))
+		sys.exit(0)
