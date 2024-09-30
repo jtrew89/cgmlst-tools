@@ -29,7 +29,7 @@ def main(args):
 		isolates_dic[isolate_id] = profile_dic
 
 	##Put into dataframe
-	out_profile = pd.DataFrame(isolate_dic).transpose()
+	out_profile = pd.DataFrame(isolates_dic).transpose()
 
 if __name__=='__main__':
 	##Create arguments
