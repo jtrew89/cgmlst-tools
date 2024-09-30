@@ -26,7 +26,7 @@ def main(args):
 					profile_dic[line.split(' ')[0].split('>')[1]] = re.sub("[^0-9]", "",line.split(' ')[2])
 				else:
 					pass
-		isolate_dic[isolate_id] = profile_dic
+		isolate_dics[isolate_id] = profile_dic
 
 	##Put into dataframe
 	out_profile = pd.DataFrame(isolate_dic).transpose()
