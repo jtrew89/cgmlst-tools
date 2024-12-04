@@ -1,4 +1,4 @@
-# Chewbbca-tools
+# cgmlst-tools
 
 Set of scripts to run ChewBBACE AlleleCall/etoki MLSType on the enterobase 3002 cgMLST schema.
 Upon finishing the allele call, it will output a list of novel alleles and STs (and 
