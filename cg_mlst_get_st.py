@@ -8,6 +8,9 @@ import re
 import sys
 pd.options.mode.chained_assignment = None  # default='warn'
 
+# Start timer
+start_time = time.time()
+
 ##script in function so that it can be used as a module in the main run_snippy.py
 def main(args):
 
@@ -83,7 +86,7 @@ def main(args):
 	##Variables for stats
 	tot_isos = len(isolate_id)
 	tot_nov = len(novel_sts)
-	tot_iden = len(sts_results) - len(novel_st_multi)
+	tot_iden = len(sts_results)
 	tot_re_st = len(novel_st_multi)
 
 	if not sts_results:
@@ -96,6 +99,13 @@ def main(args):
 	##Save new reference db
 	timestr = time.strftime("%d_%m_%Y-%H_%M")
 	profiles_df.to_csv(f"{args['db_dir']}profiles.list.{timestr}.csv")
+
+	# End timer
+	end_time = time.time()
+
+	# Calculate elapsed time
+	elapsed_time = end_time - start_time
+	print("Elapsed time: ", elapsed_time)
 
 if __name__ == '__main__':
 	##Create arguments

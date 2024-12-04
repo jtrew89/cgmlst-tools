@@ -7,6 +7,9 @@ import time
 import re
 import sys
 import resource
+import csv
+import os
+import shutil
 pd.options.mode.chained_assignment = None  # default='warn'
 
 # Start timer
@@ -73,7 +76,7 @@ def main(args):
 	for isolate in isolate_id:
 		novel_profile = query_df.loc[isolate] #current allele profile if novel
 
-		for profiles_chunk in pd.read_table(args['db'], chunksize=chunk_size, low_memory=False):
+		for profiles_chunk in pd.read_csv(args['db'], chunksize=chunk_size, low_memory=False):
 			profiles_chunk.set_index('ST', inplace=True)
 			profiles_chunk = profiles_chunk.applymap(str) #make df str otherwise there is issue with replace
 
@@ -131,7 +134,7 @@ def main(args):
 		run_novel_multi_sts_out = pd.DataFrame({'Isolate_ID':novel_iso_multi,'ST':novel_st_multi})
 		run_novel_multi_sts_out.to_csv(args['out_dir']+'run_novel_multi_sts_out.csv',index=False)
 
-	if len(sts_results) == 0:
+	if len(sts_results) == 0 and len(novel_st_multi):
 		print('All isolates had novel STs')
 	else:
 		run_ident_sts_out = pd.DataFrame({'Isolate_ID':isolate_results,'ST':sts_results})
@@ -140,7 +143,20 @@ def main(args):
 
 	##Save new reference db
 	timestr = time.strftime("%d_%m_%Y-%H_%M")
-	#profiles_df.to_csv(f"{args['db_dir']}profiles.list.{timestr}.csv")
+	novel_profiles_df.set_index('ST', inplace=True)
+
+	for index, row in novel_profiles_df.iterrows():
+		a = row.to_list()
+		b = index
+		a.insert(0,b)
+		with open(args['db'], 'a') as f:
+			writer = csv.writer(f)
+			writer.writerow(a)
+			f.close()
+
+	##copy file to new database name
+	shutil.copy2(args['db'], f"{args['db_dir']}profiles.list.{timestr}.csv")
+
 
 	# End timer
 	end_time = time.time()
@@ -160,8 +176,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	##Convert the argparse.Namespace to a dictionary: vars(args)
-	#main(vars(args))
-	#sys.exit(0)
+	main(vars(args))
+	sys.exit(0)
 
 	##Create memory exceptions
 	memory_limit_half()
