@@ -21,7 +21,7 @@ def main(args):
 	for locus in loci:
 		alle_prof_df[locus] = (pd.to_numeric(alle_prof_df[locus], errors='coerce'). fillna(0))
 
-	'''
+
 	alle_prof_df.replace(
 	   		[
 	   		'INF-','LNF',
@@ -36,7 +36,7 @@ def main(args):
 	   		],
 	   		inplace=True, regex=True
 	   			)
-	'''
+
 
 	##loop throgh getting pairwise distance (allele difference) for all isolates
 	if args['miss']:
