@@ -33,7 +33,7 @@ def main(args):
 
 	##Put into dataframe
 	out_profile = pd.DataFrame(isolates_dic).transpose()
-	out_profile.to_csv('out_allele_results.tsv',sep='\t')
+	out_profile.to_csv(args['in_dir'] + 'results_alleles.tsv',sep='\t')
 
 if __name__=='__main__':
 	##Create arguments
@@ -44,7 +44,6 @@ if __name__=='__main__':
 		help="Directory where *results_alleles.fasta are kept",
 		required=True
                	)
-
 	args = parser.parse_args()
 
 	##Convert the argparse.Namespace to a dictionary: vars(args)
