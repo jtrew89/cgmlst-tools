@@ -23,13 +23,17 @@ def main(args):
 		with open(isolate) as isolate_etoki_out:
 			for line in isolate_etoki_out:
 				if '>' in line:
-					profile_dic[line.split(' ')[0].split('>')[1]] = re.sub("[^0-9]", "",line.split(' ')[2])
+					if int(re.sub("[^0-9]", "",line.split(' ')[2])) < 10425:
+						profile_dic[line.split(' ')[0].split('>')[1]] = re.sub("[^0-9]", "",line.split(' ')[2])
+					else:
+						profile_dic[line.split(' ')[0].split('>')[1]] = 0
 				else:
 					pass
 		isolates_dic[isolate_id] = profile_dic
 
 	##Put into dataframe
 	out_profile = pd.DataFrame(isolates_dic).transpose()
+	out_profile.to_csv('out_allele_results.tsv',sep='\t')
 
 if __name__=='__main__':
 	##Create arguments
