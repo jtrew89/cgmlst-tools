@@ -19,12 +19,18 @@ def main(args):
 		for line_1 in con_table_read:
 			alle_n_list = []
 			if md5 == line_1.split(',')[0]:
-				for line_2 in con_table_read:
-					if line_1.split(',')[1] in line_2:
-						alle_n_list.append(int(re.sub('\n','',line_2.split(',')[2])))
-				return True, line_1.split(',')[1],line_1.split(',')[2], max(alle_n_list)
-			else:
-				return False, False, False, False
+				return True, line_1.split(',')[1],line_1.split(',')[2]
+			elif md5 != line_1.split(',')[0]:
+				pass
+
+	def novel_alle_num(loci):
+		con_table = open(args['con_tab'])
+		con_table_read = con_table.readlines()
+		alle_n_list = []
+		for line in con_table_read:
+			if loci in line:
+				alle_n_list.append(int(re.sub('\n','',line.split(',')[2])))
+		return max(alle_n_list)
 
 	##Variables used in script
 	os.chdir(args['in_dir'])
@@ -40,13 +46,18 @@ def main(args):
 				##Checking to see if etoki has given an allele num or an mdtsum (which means the allele is novel or duplicate)
 				if '>' in line:
 					alle_num = re.sub('id=','',line.split(' ')[2])
-					if '-' in alle_num: #if '-' is in the, it is an md5sum
-						if md5_finder(alle_num)[0]:
-							profile_dic[line.split(' ')[0].split('>')[1]] = int(re.sub('\n','',md5_finder(alle_num)[2]))
-						#else:
-						#	profile_dic[line.split(' ')[0].split('>')[1]] = '_' + (int(md5_finder(alle_num)[3] + 1))
+					loci = line.split(' ')[0].split('>')[1]
+					if '-' in alle_num: #if '-' is in the ID, it is an md5sum
+						if md5_finder(alle_num) and 'dup' not in loci:
+							profile_dic[re.sub('_dup_.*','',loci)] = int(re.sub('\n','',md5_finder(alle_num)[2]))
+						elif md5_finder(alle_num) and profile_dic[re.sub('_dup_.*','',loci)]:
+							profile_dic[re.sub('_dup_.*','',loci)] = [profile_dic[re.sub('_dup_.*','',loci)], int(re.sub('\n','',md5_finder(alle_num)[2]))]
+						elif not md5_finder(alle_num) and 'dup' not in loci:
+							profile_dic[re.sub('_dup_.*','',loci)] = '_' + str(int(novel_alle_num(re.sub('_dup_.*','',loci)) + 1))
+						elif not md5_finder(alle_num) and profile_dic[re.sub('_dup_.*','',loci)]:
+							profile_dic[re.sub('_dup_.*','',loci)] = [profile_dic[re.sub('_dup_.*','',loci)], '_' + str(int(novel_alle_num(re.sub('_dup_.*','',loci)) + 1))]
 					else:
-						profile_dic[line.split(' ')[0].split('>')[1]] = alle_num
+						profile_dic[loci] = alle_num
 				else:
 					pass
 		isolates_dic[isolate_id] = profile_dic
