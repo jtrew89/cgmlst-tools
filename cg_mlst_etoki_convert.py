@@ -32,9 +32,9 @@ def main(args):
 				alle_n_list.append(int(re.sub('\n','',line.split(',')[2])))
 		return max(alle_n_list)
 
-	def convert_table_update(fheader,novel_alle_):
-		with open(args['con_tab'], 'r') as file:
-			lines = file.readlines()
+	#def convert_table_update(fheader,novel_alle_):
+	#	with open(args['con_tab'], 'r') as file:
+	#		lines = file.readlines()
 
 	##Variables used in script
 	os.chdir(args['in_dir'])
@@ -64,11 +64,11 @@ def main(args):
 					elif not md5_finder(alle_num) and 'dup' not in loci:
 						profile_dic[loci_dup] = '_' + novel_alle
 						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						convert_table_update(line, novel_alle)
+						#convert_table_update(line, novel_alle)
 					elif not md5_finder(alle_num) and profile_dic[loci_dup]:
 						profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
 						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						convert_table_update(line, novel_alle)
+						#convert_table_update(line, novel_alle)
 				else:
 					profile_dic[loci] = alle_num
 			else:
