@@ -29,12 +29,31 @@ def main(args):
 		alle_n_list = []
 		for line in con_table_read:
 			if loci in line:
-				alle_n_list.append(int(re.sub('\n','',line.split(',')[2])))
+				alle_n_list.append(int(re.sub('_','',re.sub('\n','',line.split(',')[2]))))
 		return max(alle_n_list)
 
-	#def convert_table_update(fheader,novel_alle_):
-	#	with open(args['con_tab'], 'r') as file:
-	#		lines = file.readlines()
+	def convert_table_update(fheader,novel_alle_,loci_d):
+		line_search = loci_d + ',' + str(novel_alle_ - 1)
+		line_insert = re.sub('value_md5=','',fheader.split(' ')[1]) + ',' + loci_d + ',' + str(novel_alle_) + '_' +'\n'
+		line_ind = ''
+
+		with open(args['con_tab'], 'r') as file:
+			lines = file.readlines()
+		for num, line in enumerate(lines):
+			if line_search in line:
+				line_ind = num + 1
+
+		""" #test to see is the search function is working, used in testing
+		if line_ind == '':
+			tmp1 = re.sub('>','',fheader.split(' ')[0])
+			tmp = novel_alle_ - 1
+			sys.exit(f'{tmp} not found in search for {tmp1}')
+		"""
+
+		lines.insert(line_ind,line_insert)
+
+		with open(args['con_tab'], 'w') as file:
+			file.writelines(lines)
 
 	##Variables used in script
 	os.chdir(args['in_dir'])
@@ -55,20 +74,20 @@ def main(args):
 				alle_num = re.sub('id=','',line.split(' ')[2])
 				loci = line.split(' ')[0].split('>')[1]
 				if '-' in alle_num: #if '-' is in the ID, it is an md5sum
-					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing
+					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing if it is a duplicate
 					novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
 					if md5_finder(alle_num) and 'dup' not in loci:
-						profile_dic[loci_dup] = int(re.sub('\n','',md5_finder(alle_num)[2]))
+						profile_dic[loci_dup] = int(re.sub('_','',re.sub('\n','',md5_finder(alle_num)[2])))
 					elif md5_finder(alle_num) and profile_dic[loci_dup]:
-						profile_dic[loci_dup] = [profile_dic[loci_dup], int(re.sub('\n','',md5_finder(alle_num)[2]))]
+						profile_dic[loci_dup] = [profile_dic[loci_dup], int(re.sub('_','',re.sub('\n','',md5_finder(alle_num)[2])))]
 					elif not md5_finder(alle_num) and 'dup' not in loci:
 						profile_dic[loci_dup] = '_' + novel_alle
 						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						#convert_table_update(line, novel_alle)
+						convert_table_update(line, int(novel_alle),loci_dup)
 					elif not md5_finder(alle_num) and profile_dic[loci_dup]:
 						profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
 						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						#convert_table_update(line, novel_alle)
+						convert_table_update(line, int(novel_alle),loci_dup)
 				else:
 					profile_dic[loci] = alle_num
 			else:
