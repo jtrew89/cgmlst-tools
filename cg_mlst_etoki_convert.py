@@ -17,7 +17,6 @@ def main(args):
 		con_table = open(args['con_tab'])
 		con_table_read = con_table.readlines()
 		for line_1 in con_table_read:
-			alle_n_list = []
 			if md5 == line_1.split(',')[0]:
 				return True, line_1.split(',')[1],line_1.split(',')[2]
 			elif md5 != line_1.split(',')[0]:
@@ -41,14 +40,15 @@ def main(args):
 			lines = file.readlines()
 		for num, line in enumerate(lines):
 			if line_search in line:
+			#if line_search + '\n' == line.split(',')[1] + ',' + line.split(',')[2]: #more accurate, but not working right now
 				line_ind = num + 1
+			else:
+				pass
 
-		""" #test to see is the search function is working, used in testing
+		 #test to see is the search function is working, used in testing
 		if line_ind == '':
-			tmp1 = re.sub('>','',fheader.split(' ')[0])
-			tmp = novel_alle_ - 1
-			sys.exit(f'{tmp} not found in search for {tmp1}')
-		"""
+			sys.exit(f'{line_search} allele not found in search')
+
 
 		lines.insert(line_ind,line_insert)
 
@@ -58,10 +58,9 @@ def main(args):
 	##Variables used in script
 	os.chdir(args['in_dir'])
 	isolates_dic = {}
-
-	##Loop through list of etoki output and pull out allele profile
 	novel_alle_out = {}
 
+	##Loop through list of etoki output and pull out allele profile
 	for isolate in glob.glob('*results_alleles.fasta'):
 		profile_dic ={}
 		isolate_id = re.sub('_results_alleles.fasta','',isolate)
@@ -82,11 +81,17 @@ def main(args):
 						profile_dic[loci_dup] = [profile_dic[loci_dup], int(re.sub('_','',re.sub('\n','',md5_finder(alle_num)[2])))]
 					elif not md5_finder(alle_num) and 'dup' not in loci:
 						profile_dic[loci_dup] = '_' + novel_alle
-						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
+						if loci_dup in novel_alle_out:
+							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
+						else:
+							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
 						convert_table_update(line, int(novel_alle),loci_dup)
 					elif not md5_finder(alle_num) and profile_dic[loci_dup]:
 						profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
-						novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
+						if loci_dup in novel_alle_out:
+							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
+						else:
+							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
 						convert_table_update(line, int(novel_alle),loci_dup)
 				else:
 					profile_dic[loci] = alle_num
