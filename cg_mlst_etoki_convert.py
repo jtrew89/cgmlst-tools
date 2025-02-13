@@ -72,13 +72,15 @@ def main(args):
 			if '>' in line:
 				alle_num = re.sub('id=','',line.split(' ')[2])
 				loci = line.split(' ')[0].split('>')[1]
-				if '-' in alle_num: #if '-' is in the ID, it is an md5sum
+				if '1d840e66-127e-c54a-1924-4f29a07fb8b8' in alle_num: #Take duplicated data as missing
+					profile_dic[loci] = 0
+				elif '-' in alle_num: #if '-' is in the ID, it is an md5sum
 					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing if it is a duplicate
 					novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
 					if md5_finder(alle_num) and 'dup' not in loci:
-						profile_dic[loci_dup] = int(re.sub('_','',re.sub('\n','',md5_finder(alle_num)[2])))
+						profile_dic[loci_dup] = re.sub('\n','',md5_finder(alle_num)[2])
 					elif md5_finder(alle_num) and profile_dic[loci_dup]:
-						profile_dic[loci_dup] = [profile_dic[loci_dup], int(re.sub('_','',re.sub('\n','',md5_finder(alle_num)[2])))]
+						profile_dic[loci_dup] = [profile_dic[loci_dup], re.sub('\n','',md5_finder(alle_num)[2])]
 					elif not md5_finder(alle_num) and 'dup' not in loci:
 						profile_dic[loci_dup] = '_' + novel_alle
 						if loci_dup in novel_alle_out:
@@ -102,6 +104,7 @@ def main(args):
 
 	##Put into dataframe
 	out_profile = pd.DataFrame(isolates_dic).transpose()
+	out_profile.index.name = 'FILE'
 	out_profile.to_csv(args['in_dir'] + 'results_alleles.tsv',sep='\t')
 
 	##Output novel alleles

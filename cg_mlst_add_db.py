@@ -20,10 +20,10 @@ def main(args):
 	db_alle = pd.read_csv(args['str_db'], low_memory=False)
 
 	##Concat allele profiles for new db
-	new_db = pd.concat([in_alle,db_alle],ignore_index=True)
+	new_db = pd.concat([in_alle,db_alle], ignore_index=True)
 
 	##Save new db
-	new_db.to_csv(db_dir+'curr_db_'+date+'.csv',index=False)
+	new_db.to_csv(db_dir+'curr_db_'+date+'.tsv', sep='\t', index=False)
 
 if __name__ == '__main__':
 	##Create arguments
