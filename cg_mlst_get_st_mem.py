@@ -84,7 +84,6 @@ def main(args):
 
 			if isolate in isolate_results or isolate in novel_iso_multi: #if there is a result in earlier chunks, don't go through the left over chunks
 				pass
-
 			else:
 				query_results = profiles_chunk[profiles_chunk == novel_profile].dropna() #conditional selection for rows that match exactly (get ST)
 				if not novel_profiles_df.empty:
@@ -95,7 +94,7 @@ def main(args):
 				#else:
 				#MADE NO SENSE, SO HASHED. WILL LOOK AT IT PROPERLY LATER
 				#	novel_multi_results = novel_profiles_df[novel_profiles_df == novel_profile].dropna() #selecetion to check if the current isolate in the loop matches another isolate from this run, to stop build up of 'novel' STs in the sanme run
-				elif not query_results.empty: #if the datafame is not empty, that means there is an exact match and it is not a novel ST in this run
+				if not query_results.empty: #if the datafame is not empty, that means there is an exact match and it is not a novel ST in this run
 					st = query_results.iloc[0].name #get the matchin ST
 					sts_results.append(st) #append ST to list
 					isolate_results.append(isolate) #append isolate seached in list
