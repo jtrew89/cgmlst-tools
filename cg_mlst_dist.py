@@ -93,12 +93,12 @@ if __name__=='__main__':
 	)
 	parser.add_argument(
 	'-mt', '--missing_threshold', dest='m_threshold',
-	help='Percenatage of total missing data accepted, across all isolates (putting 5 will mean no less than 95% of data present). If lower, the process will stop',
+	help='Percenatage of total missing data accepted, across all isolates (putting 5 will mean no less than 95 %% of data present). If lower, the process will stop',
 	required=False, default=10, type=int
 	)
 	parser.add_argument(
 	'-it', '--isolate_threshold', dest='i_threshold',
-	help='Percentage of missing data accepted per isolate (putting 5 will mean no less than 95% of data present). Isolates not meeting this percentage will be removed',
+	help='Percentage of missing data accepted per isolate (putting 5 will mean no less than 95 %% of data present). Isolates not meeting this percentage will be removed',
 	required=False, default=10, type=int
 	)
 

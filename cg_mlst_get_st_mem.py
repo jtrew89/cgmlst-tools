@@ -57,18 +57,12 @@ def main(args):
 	novel_iso_multi = []
 	current_st = ''
 
-	##Replace acronyms from chewbac output and treat as missing data '0'
 	query_df.replace(
 		[
-		'INF-','LNF',
-		'PLNF', 'PLOT3',
-		'PLOT5', 'LOTSC',
-		'NIPHEM', 'NIPH',
-		'PAMA', 'ALM', 'ASM'
+		'_','nan'
 		],
 		[
-		'', '0','0','0','0','0',
-		'0','0','0','0','0'
+		'', '0'
 		],
 		inplace=True, regex=True
 			)
@@ -85,7 +79,7 @@ def main(args):
 			if isolate in isolate_results or isolate in novel_iso_multi: #if there is a result in earlier chunks, don't go through the left over chunks
 				pass
 			else:
-				query_results = profiles_chunk[profiles_chunk == novel_profile].dropna() #conditional selection for rows that match exactly (get ST)
+				query_results = profiles_chunk[profiles_chunk.astype(float).astype(int) == novel_profile.astype(float).astype(int)].dropna() #conditional selection for rows that match exactly (get ST)
 				if not novel_profiles_df.empty:
 					if isolate in list(novel_profiles_df.index): #if the current isolate has been added the the novel df already, pass this step
 						pass
@@ -170,7 +164,7 @@ def main(args):
 
 	# Calculate elapsed time
 	elapsed_time = end_time - start_time
-	print("Elapsed time: ", elapsed_time)
+	print("Elapsed time:", elapsed_time / 60, "mins")
 
 if __name__ == '__main__':
 	##Create arguments
