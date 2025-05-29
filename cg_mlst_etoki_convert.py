@@ -72,29 +72,38 @@ def main(args):
 			if '>' in line:
 				alle_num = re.sub('id=','',line.split(' ')[2])
 				loci = line.split(' ')[0].split('>')[1]
-				if '1d840e66-127e-c54a-1924-4f29a07fb8b8' in alle_num: #Take duplicated data as missing
+				if '1d840e66-127e-c54a-1924-4f29a07fb8b8' in alle_num: # This is the md5sum for 'DUPLICATED'. Take duplicated data as missing
 					profile_dic[loci] = 0
 				elif '-' in alle_num: #if '-' is in the ID, it is an md5sum
 					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing if it is a duplicate
 					novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
 					if md5_finder(alle_num) and 'dup' not in loci:
-						profile_dic[loci_dup] = re.sub('\n','',md5_finder(alle_num)[2])
+						profile_dic[loci_dup] = str(re.sub('\n','',md5_finder(alle_num)[2]))
 					elif md5_finder(alle_num) and profile_dic[loci_dup]:
-						profile_dic[loci_dup] = [profile_dic[loci_dup], re.sub('\n','',md5_finder(alle_num)[2])]
+						if args['duplicates']: # If user wants to see duplicate genes for a loci that pass EToKi's thresholds
+							profile_dic[loci_dup] = [profile_dic[loci_dup], str(re.sub('\n','',md5_finder(alle_num)[2]))] 
+						else:
+							try:
+								profile_dic[loci_dup] = min(int(re.sub('_','',profile_dic[loci_dup])),int(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2]))))
+							except:
+								profile_dic[loci_dup] = min(int(profile_dic[loci_dup]),int(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2]))))
 					elif not md5_finder(alle_num) and 'dup' not in loci:
 						profile_dic[loci_dup] = '_' + novel_alle
 						if loci_dup in novel_alle_out:
 							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
 						else:
 							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						convert_table_update(line, int(novel_alle),loci_dup)
+						convert_table_update(line, int(novel_alle),loci_dup) # If md5sum for sequence is not found, allele is novel and the md5sum is addeded to the md5sum database.
 					elif not md5_finder(alle_num) and profile_dic[loci_dup]:
-						profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
+						if args['duplicates']:
+							profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
+						else:
+							pass
 						if loci_dup in novel_alle_out:
 							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
 						else:
 							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
-						convert_table_update(line, int(novel_alle),loci_dup)
+							convert_table_update(line, int(novel_alle),loci_dup)
 				else:
 					profile_dic[loci] = alle_num
 			else:
@@ -121,12 +130,19 @@ if __name__=='__main__':
 		dest='in_dir',
 		help="Directory where *results_alleles.fasta are kept",
 		required=True
-               	)
+        )
 	parser.add_argument(
 		'-ct','--convert_table',
 		dest='con_tab',
 		help='Convert table used in EtoKi MLST call',
 		required=True
+		)
+	parser.add_argument(
+		'-d','--show_duplicates',
+		dest='duplicates',
+		help='Show duplicates called by EToKi in output dataframe',
+		required=False,
+		action='store_true'
 		)
 	args = parser.parse_args()
 
