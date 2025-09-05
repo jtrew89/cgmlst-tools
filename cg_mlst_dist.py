@@ -18,7 +18,7 @@ def main(args):
 	isolates = list(alle_prof_df.index)
 	loci_num = len(alle_prof_df.columns)
 
-	##Replace acronyms from chewbac and string from etoki output and treat as missing data '0'
+	##Formatting input
 	loci = alle_prof_df.columns[1:]
 	for locus in loci:
 		alle_prof_df[locus] = (pd.to_numeric(alle_prof_df[locus], errors='coerce'). fillna(0))

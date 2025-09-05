@@ -7,11 +7,13 @@ import argparse
 import re
 import sys
 import glob
-import subprocess
+from tqdm import tqdm
 
-##Main section of script
+## Main section of script
 def main(args):
-
+    
+	## Functions in script
+	# Function to check if md5sum from etoki output is in the database (etoki misses some of the duplicates)
 	def md5_finder(md5):
 
 		con_table = open(args['con_tab'])
@@ -22,6 +24,7 @@ def main(args):
 			elif md5 != line_1.split(',')[0]:
 				pass
 
+	# Function to get to ascertain the number for a novel allele
 	def novel_alle_num(loci):
 		con_table = open(args['con_tab'])
 		con_table_read = con_table.readlines()
@@ -31,6 +34,7 @@ def main(args):
 				alle_n_list.append(int(re.sub('_','',re.sub('\n','',line.split(',')[2]))))
 		return max(alle_n_list)
 
+	# Function to add novel allele md5 to convert table database
 	def convert_table_update(fheader,novel_alle_,loci_d):
 		line_search = loci_d + ',' + str(novel_alle_ - 1)
 		line_insert = re.sub('value_md5=','',fheader.split(' ')[1]) + ',' + loci_d + ',' + str(novel_alle_) + '_' +'\n'
@@ -54,47 +58,96 @@ def main(args):
 
 		with open(args['con_tab'], 'w') as file:
 			file.writelines(lines)
+	
+	# Function to pick allele if duplicatd using various thresholds
+	def start_codon_dup(loci_d,atg,isolate_etoki,md5s,out_count,c_allele_raw):
+		current_allele = ''
+		print(loci_d,atg,md5s,out_count,c_allele_raw,atg) # Tmp to test func
+		try:
+			c_allele = re.sub('_','',c_allele_raw)
+		except:
+			c_allele = c_allele_raw
+   
+		# Set of conditions that decide which of the duplicate alleles are used in the allele profile
+		if 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('ATG') or isolate_etoki[out_count - 1].startswith('GTG'):
+			atg = int(atg) + 1
+			print('Worked_1')
+			if isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
+				atg = int(atg) + 1
+				current_allele = min(int(md5s), int(c_allele))
+			else:
+				current_allele = c_allele
+		elif int(atg) > 0 and isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
+			current_allele = min(int(md5s), int(c_allele))
+			print('Worked_2') # tmp test
+		elif int(atg) == 0 and isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
+			print('Worked_3') # tmp test
+			current_allele = int(md5s)
+			atg = int(atg) + 1
+		# Not used right now, section for picking allele if neither start a start codon
+		#elif int(atg) == 0 and not isolate_etoki[out_count + 1].startswith('ATG') or not isolate_etoki[out_count + 1].startswith('GTG'):
+		#	print('Worked_4') # tmp test
+		#	if isolate_etoki[out_count + 1].endswith('TAA'):
+   		#		current_allele = min(int(md5s), int(c_allele))
+		elif int(atg) > 0 and not isolate_etoki[out_count + 1].startswith('ATG') or not isolate_etoki[out_count + 1].startswith('GTG'):
+			current_allele = c_allele
+			print('Worked_5') # tmp test
+		print(atg) # tmp test
+		#if int(current_allele) == int(re.sub('_','',c_allele_raw)):
+		#	print(c_allele) # tmp test
+		#	return c_allele_raw,atg
 
-	##Variables used in script
+		print(current_allele) # tmp test
+		return current_allele,atg
+
+ 	##Variables used in script
 	os.chdir(args['in_dir'])
 	isolates_dic = {}
 	novel_alle_out = {}
 
 	##Loop through list of etoki output and pull out allele profile
-	for isolate in glob.glob('*results_alleles.fasta'):
+	for isolate in tqdm(glob.glob('*results_alleles.fasta')):
+		print(isolate) # tmp test
 		profile_dic ={}
 		isolate_id = re.sub('_results_alleles.fasta','',isolate)
 		isolate_etoki_out = open(isolate)
 		isolate_etoki_out_read = isolate_etoki_out.readlines()
-		counter = 0
+		counter = 0 # Check place in convert database
+		atg_gtg_start = 0 # For use in start_codon_dup, indicates that previous duplicate of loci has started with atg/gtg, so not to consider any alleles that do not
 		for line in isolate_etoki_out_read:
 			##Checking to see if etoki has given an allele num or an mdtsum (which means the allele is novel or duplicate)
 			if '>' in line:
 				alle_num = re.sub('id=','',line.split(' ')[2])
 				loci = line.split(' ')[0].split('>')[1]
-				if '1d840e66-127e-c54a-1924-4f29a07fb8b8' in alle_num: # This is the md5sum for 'DUPLICATED'. Take duplicated data as missing
+				if '1d840e66-127e-c54a-1924-4f29a07fb8b8' in alle_num: # This is the md5sum for 'DUPLICATED'. Take duplicated data is treated as missing
 					profile_dic[loci] = 0
+				elif alle_num.startswith('-'):
+					profile_dic[loci] = -1
 				elif '-' in alle_num: #if '-' is in the ID, it is an md5sum
+					try:
+						md5 = str(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2])))
+					except:
+						md5 = ''
 					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing if it is a duplicate
-					novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
-					if md5_finder(alle_num) and 'dup' not in loci:
-						profile_dic[loci_dup] = str(re.sub('\n','',md5_finder(alle_num)[2]))
-					elif md5_finder(alle_num) and profile_dic[loci_dup]:
+					if md5 and 'dup' not in loci: # If allele (md5) is in reference convert_tab and this loci has not been search yet (not a duplicate)
+						profile_dic[loci_dup] = md5
+						atg_gtg_start = 0
+					elif md5 and profile_dic[loci_dup]: # If allele (md5) is in reference convert_tab and this loci has been search before (is a duplicate)
 						if args['duplicates']: # If user wants to see duplicate genes for a loci that pass EToKi's thresholds
-							profile_dic[loci_dup] = [profile_dic[loci_dup], str(re.sub('\n','',md5_finder(alle_num)[2]))] 
+							profile_dic[loci_dup] = [profile_dic[loci_dup], md5] 
 						else:
-							try:
-								profile_dic[loci_dup] = min(int(re.sub('_','',profile_dic[loci_dup])),int(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2]))))
-							except:
-								profile_dic[loci_dup] = min(int(profile_dic[loci_dup]),int(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2]))))
-					elif not md5_finder(alle_num) and 'dup' not in loci:
+							profile_dic[loci_dup],atg_gtg_start = start_codon_dup(loci,atg_gtg_start,isolate_etoki_out_read,md5,counter,profile_dic[loci_dup])
+					elif not md5 and 'dup' not in loci: # If allele (md5) is not in reference convert_tab (novel allele) and this loci has not been search yet (not a duplicate)
+						novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
 						profile_dic[loci_dup] = '_' + novel_alle
+						atg_gtg_start = 0
 						if loci_dup in novel_alle_out:
 							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
 						else:
 							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
 						convert_table_update(line, int(novel_alle),loci_dup) # If md5sum for sequence is not found, allele is novel and the md5sum is addeded to the md5sum database.
-					elif not md5_finder(alle_num) and profile_dic[loci_dup]:
+					elif not md5 and profile_dic[loci_dup]: # If allele (md5) is not in reference convert_tab (novel allele) and this loci has been search before (is a duplicate)
+						novel_alle = str(int(novel_alle_num(loci_dup) + 1)) #get novel allele number for current loci
 						if args['duplicates']:
 							profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
 						else:
@@ -104,17 +157,20 @@ def main(args):
 						else:
 							novel_alle_out[loci_dup] = {novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]}
 							convert_table_update(line, int(novel_alle),loci_dup)
-				else:
-					profile_dic[loci] = alle_num
+				else: # If allele has number
+					if 'dup' in loci:
+						profile_dic[loci] = alle_num
+					elif 'dup' not in loci:
+						atg_gtg_start = 0
+						profile_dic[loci] = alle_num
 			else:
 				pass
 			counter = counter + 1
 		isolates_dic[isolate_id] = profile_dic
-
-	##Put into dataframe
-	out_profile = pd.DataFrame(isolates_dic).transpose()
-	out_profile.index.name = 'FILE'
-	out_profile.to_csv(args['in_dir'] + 'results_alleles.tsv',sep='\t')
+		##Put into dataframe
+		out_profile = pd.DataFrame(isolates_dic).transpose()
+		out_profile.index.name = 'FILE'
+		out_profile.to_csv(args['in_dir'] + 'results_alleles.tsv',sep='\t')
 
 	##Output novel alleles
 	with open(args['in_dir'] + 'novel_alleles.fasta', 'w') as f:
