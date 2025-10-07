@@ -62,14 +62,14 @@ def main(args):
 	# Function to pick allele if duplicatd using various thresholds
 	def start_codon_dup(loci_d,atg,isolate_etoki,md5s,out_count,c_allele_raw):
 		current_allele = ''
-		print(loci_d,atg,md5s,out_count,c_allele_raw,atg) # Tmp to test func
+		print(loci_d,atg,md5s,out_count,c_allele_raw) # Tmp to test func
 		try:
 			c_allele = re.sub('_','',c_allele_raw)
 		except:
 			c_allele = c_allele_raw
    
 		# Set of conditions that decide which of the duplicate alleles are used in the allele profile
-		if 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('ATG') or isolate_etoki[out_count - 1].startswith('GTG'):
+		if 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('ATG') or 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('GTG'):
 			atg = int(atg) + 1
 			print('Worked_1')
 			if isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
@@ -77,19 +77,20 @@ def main(args):
 				current_allele = min(int(md5s), int(c_allele))
 			else:
 				current_allele = c_allele
-		elif int(atg) > 0 and isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
+		elif int(atg) > 0 and isolate_etoki[out_count + 1].startswith('ATG') or int(atg) > 0 and isolate_etoki[out_count + 1].startswith('GTG'):
 			current_allele = min(int(md5s), int(c_allele))
 			print('Worked_2') # tmp test
-		elif int(atg) == 0 and isolate_etoki[out_count + 1].startswith('ATG') or isolate_etoki[out_count + 1].startswith('GTG'):
+		elif int(atg) == 0 and isolate_etoki[out_count + 1].startswith('ATG') or int(atg) == 0 and isolate_etoki[out_count + 1].startswith('GTG'):
 			print('Worked_3') # tmp test
 			current_allele = int(md5s)
 			atg = int(atg) + 1
 		# Not used right now, section for picking allele if neither start a start codon
-		#elif int(atg) == 0 and not isolate_etoki[out_count + 1].startswith('ATG') or not isolate_etoki[out_count + 1].startswith('GTG'):
-		#	print('Worked_4') # tmp test
+		elif int(atg) == 0 and not isolate_etoki[out_count + 1].startswith('ATG') or int(atg) == 0 and not isolate_etoki[out_count + 1].startswith('GTG'):
+			print('Worked_4') # tmp test
+			current_allele = min(int(md5s), int(c_allele))
 		#	if isolate_etoki[out_count + 1].endswith('TAA'):
    		#		current_allele = min(int(md5s), int(c_allele))
-		elif int(atg) > 0 and not isolate_etoki[out_count + 1].startswith('ATG') or not isolate_etoki[out_count + 1].startswith('GTG'):
+		elif int(atg) > 0 and not isolate_etoki[out_count + 1].startswith('ATG') or int(atg) > 0 and not isolate_etoki[out_count + 1].startswith('GTG'):
 			current_allele = c_allele
 			print('Worked_5') # tmp test
 		print(atg) # tmp test
@@ -100,12 +101,12 @@ def main(args):
 		print(current_allele) # tmp test
 		return current_allele,atg
 
- 	##Variables used in script
+ 	## ariables used in script
 	os.chdir(args['in_dir'])
 	isolates_dic = {}
 	novel_alle_out = {}
 
-	##Loop through list of etoki output and pull out allele profile
+	## Loop through list of etoki output and pull out allele profile
 	for isolate in tqdm(glob.glob('*results_alleles.fasta')):
 		print(isolate) # tmp test
 		profile_dic ={}
@@ -115,7 +116,7 @@ def main(args):
 		counter = 0 # Check place in convert database
 		atg_gtg_start = 0 # For use in start_codon_dup, indicates that previous duplicate of loci has started with atg/gtg, so not to consider any alleles that do not
 		for line in isolate_etoki_out_read:
-			##Checking to see if etoki has given an allele num or an mdtsum (which means the allele is novel or duplicate)
+			## Checking to see if etoki has given an allele num or an mdtsum (which means the allele is novel or duplicate)
 			if '>' in line:
 				alle_num = re.sub('id=','',line.split(' ')[2])
 				loci = line.split(' ')[0].split('>')[1]
@@ -123,12 +124,12 @@ def main(args):
 					profile_dic[loci] = 0
 				elif alle_num.startswith('-'):
 					profile_dic[loci] = -1
-				elif '-' in alle_num: #if '-' is in the ID, it is an md5sum
+				elif '-' in alle_num: # If '-' is in the ID, it is an md5sum
 					try:
 						md5 = str(re.sub('\n','',re.sub('_','',md5_finder(alle_num)[2])))
 					except:
 						md5 = ''
-					loci_dup = re.sub('_dup_.*','',loci) #remove dup label for downstream parsing if it is a duplicate
+					loci_dup = re.sub('_dup_.*','',loci) # Remove dup label for downstream parsing if it is a duplicate
 					if md5 and 'dup' not in loci: # If allele (md5) is in reference convert_tab and this loci has not been search yet (not a duplicate)
 						profile_dic[loci_dup] = md5
 						atg_gtg_start = 0
