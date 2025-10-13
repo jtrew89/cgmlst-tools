@@ -101,7 +101,7 @@ def main(args):
 		print(current_allele) # tmp test
 		return current_allele,atg
 
- 	## ariables used in script
+ 	## Variables used in script
 	os.chdir(args['in_dir'])
 	isolates_dic = {}
 	novel_alle_out = {}
@@ -152,7 +152,7 @@ def main(args):
 						if args['duplicates']:
 							profile_dic[loci_dup] = [profile_dic[loci_dup], '_' + novel_alle]
 						else:
-							pass
+							profile_dic[loci_dup],atg_gtg_start = start_codon_dup(loci,atg_gtg_start,isolate_etoki_out_read,novel_alle,counter,profile_dic[loci_dup])
 						if loci_dup in novel_alle_out:
 							novel_alle_out[loci_dup].update({novel_alle + '_' + alle_num: isolate_etoki_out_read[counter + 1]})
 						else:
@@ -161,6 +161,8 @@ def main(args):
 				else: # If allele has number
 					if 'dup' in loci:
 						profile_dic[loci] = alle_num
+						if isolate_etoki_out_read[counter + 1].startswith('ATG') or isolate_etoki_out_read[counter + 1].startswith('GTG'):
+							atg_gtg_start = atg_gtg_start + 1
 					elif 'dup' not in loci:
 						atg_gtg_start = 0
 						profile_dic[loci] = alle_num
@@ -168,7 +170,8 @@ def main(args):
 				pass
 			counter = counter + 1
 		isolates_dic[isolate_id] = profile_dic
-		##Put into dataframe
+
+		## Put into dataframe
 		out_profile = pd.DataFrame(isolates_dic).transpose()
 		out_profile.index.name = 'FILE'
 		out_profile.to_csv(args['in_dir'] + 'results_alleles.tsv',sep='\t')
