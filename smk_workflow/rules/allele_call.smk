@@ -1,4 +1,5 @@
 # This rule runs EToKi.py MLSType
+# Libraries used
 from snakemake.io import glob_wildcards
 import os
 
