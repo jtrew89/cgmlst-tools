@@ -23,7 +23,7 @@ def main(args):
 	for locus in loci:
 		alle_prof_df[locus] = (pd.to_numeric(alle_prof_df[locus], errors='coerce'). fillna(0))
 
-	"""
+	'''
 	alle_prof_df.replace(
 	   		[
 	   		'INF-','LNF',
@@ -38,7 +38,7 @@ def main(args):
 	   		],
 	   		inplace=True, regex=True
 			)
-	"""
+	'''
 
 	##remove missing data based on thresholds
 	if args['miss']:
