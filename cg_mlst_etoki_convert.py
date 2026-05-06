@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 ## Main section of script
 def main(args):
-    
+
 	## Functions in script
 	# Function to check if md5sum from etoki output is in the database (etoki misses some of the duplicates)
 	def md5_finder(md5):
@@ -58,7 +58,7 @@ def main(args):
 
 		with open(args['con_tab'], 'w') as file:
 			file.writelines(lines)
-	
+
 	# Function to pick allele if duplicatd using various thresholds
 	def start_codon_dup(loci_d,atg,isolate_etoki,md5s,out_count,c_allele_raw):
 		current_allele = ''
@@ -67,7 +67,7 @@ def main(args):
 			c_allele = re.sub('_','',c_allele_raw)
 		except:
 			c_allele = c_allele_raw
-   
+
 		# Set of conditions that decide which of the duplicate alleles are used in the allele profile
 		if 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('ATG') or 'dup_1' in loci_d and isolate_etoki[out_count - 1].startswith('GTG'):
 			atg = int(atg) + 1
