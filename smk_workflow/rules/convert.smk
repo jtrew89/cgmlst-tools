@@ -18,7 +18,7 @@ rule etoki_convert:
 	output:
 		parsed_etoki = os.path.join(out_dir,"results_alleles.tsv")
 	shell:
-		"{scripts_dir}/cg_mlst_etoki_convert.py "
+		"{scripts_dir}/cg_mlst_etoki_convert_fast.py "
 		"-id {out_dir} "
 		"-ct {input.all_con} "
 		"-od {output.parsed_etoki}"

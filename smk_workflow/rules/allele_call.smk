@@ -24,6 +24,8 @@ rule allele_call:
 		all_con = os.path.join(sch_dir,'all_convert.tab')
 	output:
 		results_alleles = os.path.join(out_dir, "{sample}_results_alleles.fasta")
+	resources:
+		pair_jobs=3
 	shell:
 		"python {etoki} MLSType "
 		"-i {input.iso_assem} "
