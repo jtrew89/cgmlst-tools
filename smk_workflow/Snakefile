@@ -1,0 +1,22 @@
+# Snakemake workflow 
+import os
+
+# Directories
+results = "etoki_out/"
+assemblies = "assemblies/"
+
+# Rules to be used
+include: "rules/assemble.smk"
+include: "rules/allele_call.smk"
+include: "rules/convert.smk"
+#include: "rules/sero_up_db.smk"
+#include: "rules/novel_list.smk
+#include: "rules/insert_seq.smk"
+#include: "rules/get_sts.smk"
+include: "rules/dist.smk"
+#include: "rules/mst_tree.smk"
+
+# Out Rules
+rule all:
+	input:
+		os.path.join(results,"allele_dist_miss.tsv")

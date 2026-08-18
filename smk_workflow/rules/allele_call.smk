@@ -4,22 +4,18 @@ from snakemake.io import glob_wildcards
 import os
 
 # Variables/directories used
-etoki = "/home/jahcubtrew/packages/etoki_duplicate/EToKi.py"
-genome_dir = "assemblies"
+etoki_dup = "/home/jahcubtrew/packages/etoki_duplicate/EToKi.py"
+out_assem = "assemblies"
 sch_dir = "schemas"
 out_dir = "etoki_out"
 
 # Get fastas
-wildcards_fa = glob_wildcards(os.path.join(genome_dir,'{sample}.fasta'))
+wildcards_fa = glob_wildcards(os.path.join(out_assem,'{sample}.result.fasta'))
 
 # Generate EToKi MLST call output
-rule all:
-	input:
-		expand(os.path.join(out_dir,'{sample}_results_alleles.fasta'), sample = wildcards_fa.sample)
-
 rule allele_call:
 	input:
-		iso_assem = os.path.join(genome_dir,'{sample}.fasta'),
+		iso_assem = os.path.join(out_assem,'{sample}.result.fasta'),
 		ref = os.path.join(sch_dir,'all_references.fasta'),
 		all_con = os.path.join(sch_dir,'all_convert.tab')
 	output:
@@ -27,9 +23,16 @@ rule allele_call:
 	resources:
 		pair_jobs=3
 	shell:
-		"python {etoki} MLSType "
+		"python {etoki_dup} MLSType "
 		"-i {input.iso_assem} "
 		"-r {input.ref} "
 		"-k G749 "
 		"-o {output.results_alleles} "
 		"-d {input.all_con} -l 44"
+
+# Generate file to indicate allele_call is complete
+rule allele_call_complete:
+	input:
+		expand(os.path.join(out_dir, "{sample}_results_alleles.fasta"),sample=wildcards_fa.sample)
+	output:
+		complete = touch("etoki_out/.allele_call_complete")

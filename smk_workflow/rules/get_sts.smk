@@ -10,10 +10,6 @@ out_dir = "etoki_out/"
 timestr = time.strftime("%d_%m_%Y-%H_%M")
 
 # Run allele profile comparison to get cgMLST
-rule all:
-	input:
-		os.path.join(db_dir,"profiles.list." + timestr + ".csv")
-
 rule get_sts:
 	input:
 		alle_pros = os.path.join(out_dir, "results_alleles.tsv"),

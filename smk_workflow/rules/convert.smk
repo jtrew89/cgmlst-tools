@@ -8,13 +8,10 @@ sch_dir = "schemas"
 out_dir = "etoki_out/"
 
 # Generate results_alleles from Etoki output
-rule all:
-	input:
-		os.path.join(out_dir,"results_alleles.tsv")
-
 rule etoki_convert:
 	input:
-		all_con = os.path.join(sch_dir,"all_convert.tab")
+		all_con = os.path.join(sch_dir,"all_convert.tab"),
+		complete = rules.allele_call_complete.output.complete
 	output:
 		parsed_etoki = os.path.join(out_dir,"results_alleles.tsv")
 	shell:
