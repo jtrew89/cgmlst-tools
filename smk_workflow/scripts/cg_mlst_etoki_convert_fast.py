@@ -170,7 +170,7 @@ def main(args):
 			for key2, value2 in value1.items():
 				f.write('>' + key1 + '_' + key2 + '\n' + value2)
     
-	os.chdir(original_dir)
+	os.chdir(original_dir + '/schemas/')
 	with open("all_convert_" + f"{timestr}" + '.tab', 'w') as f:
 		for md5, (locus, allele) in md5_lookup.items():
 			f.write(f"{md5},{locus},{allele}\n")	
