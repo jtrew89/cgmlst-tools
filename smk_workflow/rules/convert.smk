@@ -8,7 +8,7 @@ sch_dir = "schemas"
 out_dir = "etoki_out/"
 
 # Generate results_alleles from Etoki output
-rule etoki_convert:
+checkpoint etoki_convert:
 	input:
 		all_con = os.path.join(sch_dir,"all_convert.tab"),
 		complete = rules.allele_call_complete.output.complete

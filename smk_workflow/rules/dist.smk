@@ -8,11 +8,6 @@ import pandas as pd
 out_dir = "etoki_out/"
 pairwise_out = "etoki_out/pairwise/"
 scripts_dir = "scripts"
-#timestr = time.strftime("%d_%m_%Y-%H_%M")
-
-# Get isolate list to run distance script per isolate
-result_df = pd.read_table(out_dir + "results_alleles.tsv")
-isolate_ids = result_df["Isolate_ID"].unique().tolist()
 
 # File snakemake will look for, and run if not present
 rule pair_dist:
@@ -27,11 +22,23 @@ rule pair_dist:
 		"-od {pairwise_out}/ "
 		"-m"
 
+# Function to get isolate list to run distance script per isolate
+def get_pairwise_files(wildcards):
+
+	# Wait for checkpoint to finish
+	ckpt_output = checkpoints.etoki_convert.get().output[0]
+
+	# Read resulting file
+	results_df = pd.read_table(ckpt_output)
+
+	isolates = results_df["Isolate_ID"].unique().tolist()
+
+	return expand(os.path.join(pairwise_out, "{isolate}.tsv"), isolate=isolates)
+
 rule combine_matrix:
 	input:
-		expand(os.path.join(pairwise_out, "{isolate}.tsv"), isolate=isolate_ids)
+		get_pairwise_files
 	output:
-		#dist_out = os.path.join(out_dir,"allele_dist_miss" + '_' + timestr + ".tsv")
 		dist_out = os.path.join(out_dir,"allele_dist_miss.tsv")
 	run:
 		import pandas as pd
